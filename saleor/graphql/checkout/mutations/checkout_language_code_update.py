@@ -3,6 +3,7 @@ import graphene
 from saleor.checkout.actions import call_checkout_event
 from saleor.webhook.event_types import WebhookEventAsyncType
 
+from ....channel.storefront import channel_document_language
 from ...core import ResolveInfo
 from ...core.context import SyncWebhookControlContext
 from ...core.descriptions import DEPRECATED_IN_3X_INPUT
@@ -65,7 +66,10 @@ class CheckoutLanguageCodeUpdate(BaseMutation):
     ):
         checkout = get_checkout(cls, info, checkout_id=checkout_id, token=token, id=id)
 
-        checkout.language_code = language_code
+        # Channel default locale overrides the client's language (ADR 0008).
+        checkout.language_code = channel_document_language(
+            checkout.channel, language_code
+        )
         checkout.save(update_fields=["language_code", "last_change"])
         manager = get_plugin_manager_promise(info.context).get()
         call_checkout_event(

@@ -5,6 +5,7 @@ import graphene
 from django.core.exceptions import ValidationError
 
 from ....account.models import User
+from ....channel.storefront import channel_document_language
 from ....checkout import AddressType
 from ....core.tracing import traced_atomic_transaction
 from ....core.utils.update_mutation_manager import InstanceTracker
@@ -227,6 +228,12 @@ class OrderUpdate(AddressMetadataMixin, ModelWithExtRefMutation, I18nMixin):
                 address_type=AddressType.BILLING,
                 instance=instance.billing_address,
                 info=info,
+            )
+
+        # Channel default locale overrides the requested language (ADR 0008).
+        if "language_code" in cleaned_input:
+            cleaned_input["language_code"] = channel_document_language(
+                instance.channel, cleaned_input["language_code"]
             )
 
         return cleaned_input

@@ -8,6 +8,8 @@ from .....account import models
 from .....account.error_codes import AccountErrorCode
 from .....account.tasks import finish_creating_user
 from .....account.utils import RequestorAwareContext, get_default_customer_type
+from .....channel.models import Channel
+from .....channel.storefront import channel_document_language
 from .....core.utils.url import validate_storefront_url
 from .....webhook.event_types import WebhookEventAsyncType
 from ....channel.utils import clean_channel
@@ -156,6 +158,12 @@ class AccountRegister(DeprecatedModelMutation):
             raise ValidationError({"password": e}) from e
 
         data["language_code"] = data.get("language_code", settings.LANGUAGE_CODE)
+        # Channel default locale overrides the client's language (ADR 0008).
+        if channel_slug := data.get("channel"):
+            channel = Channel.objects.filter(slug=channel_slug).first()
+            data["language_code"] = channel_document_language(
+                channel, data["language_code"]
+            )
         return super().clean_input(info, instance, data, **kwargs)
 
     @classmethod

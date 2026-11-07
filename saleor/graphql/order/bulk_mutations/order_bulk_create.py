@@ -21,6 +21,7 @@ from ....account.models import Address, User
 from ....account.utils import update_user_orders_count
 from ....app.models import App
 from ....channel.models import Channel
+from ....channel.storefront import channel_document_language
 from ....core import JobStatus
 from ....core.prices import quantize_price
 from ....core.tracing import traced_atomic_transaction
@@ -2149,7 +2150,10 @@ class OrderBulkCreate(BaseMutation, I18nMixin):
             user_orders_count[order_data.user.id] += 1
         order_data.order.billing_address = order_data.billing_address
         order_data.order.shipping_address = order_data.shipping_address
-        order_data.order.language_code = order_input["language_code"]
+        # Channel default locale overrides the imported language (ADR 0008).
+        order_data.order.language_code = channel_document_language(
+            order_data.channel, order_input["language_code"]
+        )
         order_data.order.user_email = (
             order_data.user.email
             if order_data.user

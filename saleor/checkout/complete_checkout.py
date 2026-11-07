@@ -18,6 +18,7 @@ from ..account.error_codes import AccountErrorCode
 from ..account.models import Address, User
 from ..account.utils import retrieve_user_by_email, store_user_address
 from ..channel import MarkAsPaidStrategy
+from ..channel.storefront import channel_document_language
 from ..checkout import CheckoutAuthorizeStatus, calculations
 from ..checkout.error_codes import CheckoutErrorCode
 from ..core.exceptions import GiftCardNotApplicable, InsufficientStock
@@ -1476,7 +1477,9 @@ def _create_order_from_checkout(
     # order
     order = Order.objects.create(  # type: ignore[misc] # see below:
         status=status,
-        language_code=checkout_info.checkout.language_code,
+        language_code=channel_document_language(
+            checkout_info.channel, checkout_info.checkout.language_code
+        ),
         total=taxed_total,  # money field not supported by mypy_django_plugin
         shipping_tax_rate=shipping_tax_rate,
         voucher=voucher,

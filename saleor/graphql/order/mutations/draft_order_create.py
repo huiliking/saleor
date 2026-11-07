@@ -249,6 +249,9 @@ class DraftOrderCreate(
 
         if channel:
             cleaned_input["currency"] = channel.currency_code
+            # Channel default locale overrides the requested language (ADR 0008).
+            if channel.default_locale:
+                cleaned_input["language_code"] = channel.default_locale
 
         lines = data.pop("lines", None)
         cls.clean_lines(cleaned_input, lines, channel)

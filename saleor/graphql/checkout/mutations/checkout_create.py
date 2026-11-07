@@ -4,6 +4,7 @@ import graphene
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from ....channel.storefront import channel_document_language
 from ....checkout import AddressType, models
 from ....checkout.actions import call_checkout_event
 from ....checkout.error_codes import CheckoutErrorCode
@@ -465,7 +466,10 @@ class CheckoutCreate(DeprecatedModelMutation, I18nMixin):
             cleaned_input["email"] = email or user.email
 
         language_code = data.get("language_code", settings.LANGUAGE_CODE)
-        cleaned_input["language_code"] = language_code
+        # Channel default locale overrides the client's language (ADR 0008).
+        cleaned_input["language_code"] = channel_document_language(
+            cleaned_input["channel"], language_code
+        )
 
         cleaned_input["shipping_address"] = shipping_address
         cleaned_input["billing_address"] = billing_address
