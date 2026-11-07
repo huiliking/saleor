@@ -1,6 +1,7 @@
 import datetime
 
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django_countries.fields import CountryField
 
@@ -73,6 +74,19 @@ class Channel(ModelWithMetadata):
     checkout_release_funds_cut_off_date = models.DateTimeField(null=True, blank=True)
 
     allow_legacy_gift_card_use = models.BooleanField(default=True, db_default=True)
+
+    # Storefront market configuration (ADR 0008, Phase 2). Locale codes come from
+    # settings.LANGUAGES (e.g. "en", "fr-ca"); validated in saleor.channel.storefront.
+    storefront_locales = ArrayField(
+        models.CharField(max_length=35),
+        default=list,
+        db_default=[],
+        blank=True,
+    )
+    # Document language for checkouts, orders and accounts created in this channel.
+    # When set it overrides the language sent by the caller.
+    default_locale = models.CharField(max_length=35, null=True, blank=True)
+    is_storefront_visible = models.BooleanField(default=False, db_default=False)
 
     class Meta(ModelWithMetadata.Meta):
         ordering = ("slug",)
