@@ -42,6 +42,7 @@ from .utils import (
     clean_input_checkout_settings,
     clean_input_order_settings,
     clean_input_payment_settings,
+    clean_input_storefront_settings,
 )
 
 
@@ -272,6 +273,26 @@ class ChannelInput(BaseInputObjectType):
     is_active = graphene.Boolean(
         description="Determine if channel will be set active or not."
     )
+    storefront_locales = NonNullList(
+        graphene.String,
+        description=(
+            "Storefront (market) locales the channel is sold in, as language codes "
+            "from `LanguageCodeEnum` in lowercase form (e.g. `en`, `fr-ca`)."
+        ),
+        required=False,
+    )
+    default_locale = graphene.String(
+        description=(
+            "Default locale of the channel; must be one of `storefrontLocales`. When "
+            "set, it is stored as the language of checkouts, orders and accounts "
+            "created in the channel, overriding the language sent by the client."
+        ),
+        required=False,
+    )
+    is_storefront_visible = graphene.Boolean(
+        description="Whether storefronts should list this channel.",
+        required=False,
+    )
     stock_settings = graphene.Field(
         StockSettingsInput,
         description="The channel stock settings.",
@@ -385,6 +406,8 @@ class ChannelCreate(DeprecatedModelMutation):
 
         if payment_settings := cleaned_input.get("payment_settings"):
             clean_input_payment_settings(payment_settings, cleaned_input)
+
+        clean_input_storefront_settings(cleaned_input, instance)
 
         return cleaned_input
 

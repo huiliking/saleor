@@ -302,6 +302,38 @@ class Channel(ModelObjectType):
             AuthorizationFilters.AUTHENTICATED_STAFF_USER,
         ],
     )
+    storefront_locales = PermissionsField(
+        NonNullList(graphene.String),
+        description=(
+            "Storefront (market) locales the channel is sold in (lowercase language "
+            "codes, e.g. `en`, `fr-ca`)."
+        ),
+        required=True,
+        permissions=[
+            AuthorizationFilters.AUTHENTICATED_APP,
+            AuthorizationFilters.AUTHENTICATED_STAFF_USER,
+        ],
+    )
+    default_locale = PermissionsField(
+        graphene.String,
+        description=(
+            "Default locale of the channel. When set, Saleor stores it as the language "
+            "of checkouts, orders and accounts created in the channel."
+        ),
+        permissions=[
+            AuthorizationFilters.AUTHENTICATED_APP,
+            AuthorizationFilters.AUTHENTICATED_STAFF_USER,
+        ],
+    )
+    is_storefront_visible = PermissionsField(
+        graphene.Boolean,
+        description="Whether storefronts should list this channel.",
+        required=True,
+        permissions=[
+            AuthorizationFilters.AUTHENTICATED_APP,
+            AuthorizationFilters.AUTHENTICATED_STAFF_USER,
+        ],
+    )
     warehouses = PermissionsField(
         NonNullList(Warehouse),
         description="List of warehouses assigned to this channel.",

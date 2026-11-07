@@ -40,6 +40,7 @@ from .utils import (
     clean_input_checkout_settings,
     clean_input_order_settings,
     clean_input_payment_settings,
+    clean_input_storefront_settings,
 )
 
 
@@ -179,6 +180,8 @@ class ChannelUpdate(DeprecatedModelMutation):
 
         if payment_settings := cleaned_input.get("payment_settings"):
             clean_input_payment_settings(payment_settings, cleaned_input)
+
+        clean_input_storefront_settings(cleaned_input, instance)
 
         return cleaned_input
 

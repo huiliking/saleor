@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from ....channel.models import Channel
+from ....channel.storefront import clean_storefront_locales
 from ...core.enums import ChannelErrorCode
 
 CHANNEL_UPDATE_FIELDS = [
@@ -31,6 +32,9 @@ CHANNEL_UPDATE_FIELDS = [
     "checkout_ttl_before_releasing_funds",
     "checkout_release_funds_cut_off_date",
     "allow_legacy_gift_card_use",
+    "storefront_locales",
+    "default_locale",
+    "is_storefront_visible",
     "metadata",
     "private_metadata",
 ]
@@ -301,3 +305,31 @@ def clean_input_payment_settings(payment_settings: dict, cleaned_input: dict):
         cleaned_input["checkout_release_funds_cut_off_date"] = (
             checkout_release_funds_cut_off_date
         )
+
+
+STOREFRONT_FIELDS = ("storefront_locales", "default_locale", "is_storefront_visible")
+
+
+def clean_input_storefront_settings(cleaned_input: dict, instance: Channel):
+    """Validate storefront locales / default locale (ADR 0008).
+
+    Partial updates are checked against the channel's current values, so a default locale
+    can never point outside the stored locale list.
+    """
+    if not any(field in cleaned_input for field in STOREFRONT_FIELDS):
+        return
+    locales = cleaned_input.get("storefront_locales", instance.storefront_locales)
+    default = cleaned_input.get("default_locale", instance.default_locale)
+    try:
+        locales, default = clean_storefront_locales(locales, default)
+    except ValidationError as error:
+        raise ValidationError(
+            {
+                field: ValidationError(messages[0], code=ChannelErrorCode.INVALID.value)
+                for field, messages in error.message_dict.items()
+            }
+        ) from error
+    if "storefront_locales" in cleaned_input or locales != instance.storefront_locales:
+        cleaned_input["storefront_locales"] = locales
+    if "default_locale" in cleaned_input or default != instance.default_locale:
+        cleaned_input["default_locale"] = default

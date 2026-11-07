@@ -7709,6 +7709,27 @@ type Channel implements Node & ObjectWithMetadata @doc(category: "Channels") {
   defaultCountry: CountryDisplay!
 
   """
+  Storefront (market) locales the channel is sold in (lowercase language codes, e.g. `en`, `fr-ca`).
+  
+  Requires one of the following permissions: AUTHENTICATED_APP, AUTHENTICATED_STAFF_USER.
+  """
+  storefrontLocales: [String!]!
+
+  """
+  Default locale of the channel. When set, Saleor stores it as the language of checkouts, orders and accounts created in the channel.
+  
+  Requires one of the following permissions: AUTHENTICATED_APP, AUTHENTICATED_STAFF_USER.
+  """
+  defaultLocale: String
+
+  """
+  Whether storefronts should list this channel.
+  
+  Requires one of the following permissions: AUTHENTICATED_APP, AUTHENTICATED_STAFF_USER.
+  """
+  isStorefrontVisible: Boolean!
+
+  """
   List of warehouses assigned to this channel.
   
   Requires one of the following permissions: AUTHENTICATED_APP, AUTHENTICATED_STAFF_USER.
@@ -32621,6 +32642,19 @@ input ChannelCreateInput @doc(category: "Channels") {
   """Determine if channel will be set active or not."""
   isActive: Boolean
 
+  """
+  Storefront (market) locales the channel is sold in, as language codes from `LanguageCodeEnum` in lowercase form (e.g. `en`, `fr-ca`).
+  """
+  storefrontLocales: [String!]
+
+  """
+  Default locale of the channel; must be one of `storefrontLocales`. When set, it is stored as the language of checkouts, orders and accounts created in the channel, overriding the language sent by the client.
+  """
+  defaultLocale: String
+
+  """Whether storefronts should list this channel."""
+  isStorefrontVisible: Boolean
+
   """The channel stock settings."""
   stockSettings: StockSettingsInput
 
@@ -32833,6 +32867,19 @@ type ChannelUpdate @doc(category: "Channels") @webhookEventsInfo(asyncEvents: [C
 input ChannelUpdateInput @doc(category: "Channels") {
   """Determine if channel will be set active or not."""
   isActive: Boolean
+
+  """
+  Storefront (market) locales the channel is sold in, as language codes from `LanguageCodeEnum` in lowercase form (e.g. `en`, `fr-ca`).
+  """
+  storefrontLocales: [String!]
+
+  """
+  Default locale of the channel; must be one of `storefrontLocales`. When set, it is stored as the language of checkouts, orders and accounts created in the channel, overriding the language sent by the client.
+  """
+  defaultLocale: String
+
+  """Whether storefronts should list this channel."""
+  isStorefrontVisible: Boolean
 
   """The channel stock settings."""
   stockSettings: StockSettingsInput
